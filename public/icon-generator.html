@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head><title>Icon Generator</title></head>
+<body>
+<canvas id="c192" width="192" height="192"></canvas>
+<canvas id="c512" width="512" height="512"></canvas>
+<script>
+function drawIcon(canvas) {
+  const ctx = canvas.getContext('2d');
+  const s = canvas.width;
+  // 背景
+  ctx.fillStyle = '#0B0F2A';
+  ctx.fillRect(0, 0, s, s);
+  // グラデーション円
+  const grd = ctx.createRadialGradient(s*0.5, s*0.45, s*0.05, s*0.5, s*0.45, s*0.4);
+  grd.addColorStop(0, '#7F77DD');
+  grd.addColorStop(1, '#378ADD');
+  ctx.fillStyle = grd;
+  ctx.beginPath();
+  ctx.arc(s*0.5, s*0.45, s*0.32, 0, Math.PI*2);
+  ctx.fill();
+  // 月マーク
+  ctx.fillStyle = '#0B0F2A';
+  ctx.beginPath();
+  ctx.arc(s*0.58, s*0.38, s*0.22, 0, Math.PI*2);
+  ctx.fill();
+  // 星
+  ctx.fillStyle = '#E8EAF6';
+  [[0.25,0.25],[0.72,0.2],[0.15,0.65],[0.8,0.7],[0.5,0.82]].forEach(([x,y]) => {
+    ctx.beginPath();
+    ctx.arc(s*x, s*y, s*0.018, 0, Math.PI*2);
+    ctx.fill();
+  });
+}
+['c192','c512'].forEach(id => drawIcon(document.getElementById(id)));
+
+// ダウンロードリンク生成
+['c192','c512'].forEach((id, i) => {
+  const a = document.createElement('a');
+  a.href = document.getElementById(id).toDataURL('image/png');
+  a.download = `icon-${[192,512][i]}.png`;
+  a.textContent = `Download icon-${[192,512][i]}.png`;
+  a.style.display = 'block';
+  document.body.appendChild(a);
+});
+</script>
+</body>
+</html>
