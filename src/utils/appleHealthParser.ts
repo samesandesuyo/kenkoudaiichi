@@ -222,19 +222,20 @@ export function parseAppleHealthXML(xmlText: string): ParseResult {
 
   // 生理開始日を推定（連続する生理期間の最初の日）
   let latestCycleStart: string | null = null;
-  if (latestMenstrualDate) {
+  const menstrualDateFixed: string | null = latestMenstrualDate;
+  if (menstrualDateFixed) {
     // 最新の生理記録から遡って連続する最初の日を探す
-    const sorted = Object.keys(logs)
+    const sorted: string[] = Object.keys(logs)
       .filter((d) => logs[d].cyclePhase === 'menstruation')
       .sort();
 
-    let firstDay = latestMenstrualDate;
+    let firstDay: string = menstrualDateFixed;
     for (let i = sorted.length - 1; i > 0; i--) {
       const cur = new Date(sorted[i]);
       const prev = new Date(sorted[i - 1]);
       const diffDays = (cur.getTime() - prev.getTime()) / 86400000;
       if (diffDays <= 2) {
-        firstDay = sorted[i - 1];
+        firstDay = sorted[i - 1] as string;
       } else {
         break;
       }

@@ -1,6 +1,5 @@
 import { useState, useRef } from 'react';
 import type { DailyLog, EnergyLevel } from '../types/health';
-import type { UserSettings } from '../types/health';
 import {
   loadAppleHealthFile,
   parseAppleHealthXML,
@@ -9,7 +8,6 @@ import {
 
 interface Props {
   existingLogs: Record<string, DailyLog>;
-  settings: UserSettings;
   onImport: (logs: Record<string, DailyLog>, newCycleStart: string | null) => void;
 }
 
@@ -26,7 +24,7 @@ const DEFAULT_LOG_VALUES: Omit<DailyLog, 'date'> = {
   pressureHpa: null,
 };
 
-export function HealthImport({ existingLogs, settings, onImport }: Props) {
+export function HealthImport({ existingLogs, onImport }: Props) {
   const [phase, setPhase] = useState<Phase>('idle');
   const [error, setError] = useState('');
   const [summary, setSummary] = useState<ImportSummary | null>(null);

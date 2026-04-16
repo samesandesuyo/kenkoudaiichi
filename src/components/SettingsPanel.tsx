@@ -130,7 +130,6 @@ export function SettingsPanel({ settings, onSave, onClose, existingLogs, onImpor
         {/* Apple Health インポート */}
         <HealthImport
           existingLogs={existingLogs}
-          settings={form}
           onImport={(logs, newCycleStart) => {
             onImportLogs(logs, newCycleStart);
             if (newCycleStart) {
