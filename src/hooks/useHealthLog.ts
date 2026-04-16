@@ -56,5 +56,9 @@ export function useHealthLog() {
     persist(next);
   }, [store, persist]);
 
-  return { getTodayLog, getLog, saveLog, getLogs, deleteLog, store };
+  const importLogs = useCallback((newStore: LogStore) => {
+    persist(newStore);
+  }, [persist]);
+
+  return { getTodayLog, getLog, saveLog, getLogs, deleteLog, importLogs, store };
 }

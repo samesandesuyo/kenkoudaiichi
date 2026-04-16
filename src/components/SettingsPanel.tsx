@@ -1,13 +1,16 @@
 import { useState } from 'react';
-import type { UserSettings } from '../types/health';
+import type { UserSettings, DailyLog } from '../types/health';
+import { HealthImport } from './HealthImport';
 
 interface Props {
   settings: UserSettings;
   onSave: (s: UserSettings) => void;
   onClose: () => void;
+  existingLogs: Record<string, DailyLog>;
+  onImportLogs: (logs: Record<string, DailyLog>, newCycleStart: string | null) => void;
 }
 
-export function SettingsPanel({ settings, onSave, onClose }: Props) {
+export function SettingsPanel({ settings, onSave, onClose, existingLogs, onImportLogs }: Props) {
   const [form, setForm] = useState(settings);
   const [saved, setSaved] = useState(false);
 
@@ -123,6 +126,18 @@ export function SettingsPanel({ settings, onSave, onClose }: Props) {
             </div>
           </div>
         </div>
+
+        {/* Apple Health インポート */}
+        <HealthImport
+          existingLogs={existingLogs}
+          settings={form}
+          onImport={(logs, newCycleStart) => {
+            onImportLogs(logs, newCycleStart);
+            if (newCycleStart) {
+              setForm((prev) => ({ ...prev, cycleStartDate: newCycleStart }));
+            }
+          }}
+        />
 
         {/* データ注意 */}
         <p className="text-xs" style={{ color: 'var(--color-muted)' }}>

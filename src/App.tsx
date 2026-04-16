@@ -24,7 +24,7 @@ const ONBOARDING_KEY = 'yozora-onboarding-done';
 
 export default function App() {
   const { settings, saveSettings } = useSettings();
-  const { getTodayLog, saveLog, getLogs, store } = useHealthLog();
+  const { getTodayLog, saveLog, getLogs, store, importLogs } = useHealthLog();
   const pressure = usePressureData(settings.location.lat, settings.location.lon);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
@@ -83,6 +83,13 @@ export default function App() {
           settings={settings}
           onSave={(s) => { saveSettings(s); setSettingsOpen(false); }}
           onClose={() => setSettingsOpen(false)}
+          existingLogs={store}
+          onImportLogs={(logs, newCycleStart) => {
+            importLogs(logs);
+            if (newCycleStart) {
+              saveSettings({ ...settings, cycleStartDate: newCycleStart });
+            }
+          }}
         />
       )}
     </>
