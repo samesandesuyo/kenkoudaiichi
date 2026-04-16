@@ -70,6 +70,21 @@ export default function App() {
     () => !localStorage.getItem(ONBOARDING_KEY)
   );
 
+  const todayDate = getToday();
+  const tomorrowDate = getTomorrow();
+  const todayLog = getTodayLog();
+  const recentLogs = getLogs(7);
+
+  const defaultCyclePhase = useMemo(
+    () => calcCyclePhaseForDate(settings, todayDate),
+    [settings, todayDate]
+  );
+
+  const prediction = useMemo(
+    () => buildPrediction(tomorrowDate, pressure.trend, recentLogs, settings),
+    [tomorrowDate, pressure.trend, recentLogs, settings]
+  );
+
   if (loading || !loaded) {
     return (
       <div className="min-h-screen flex items-center justify-center"
@@ -88,22 +103,6 @@ export default function App() {
     localStorage.setItem(ONBOARDING_KEY, '1');
     setShowOnboarding(false);
   };
-
-  const todayDate = getToday();
-  const tomorrowDate = getTomorrow();
-
-  const todayLog = getTodayLog();
-  const recentLogs = getLogs(7);
-
-  const defaultCyclePhase = useMemo(
-    () => calcCyclePhaseForDate(settings, todayDate),
-    [settings, todayDate]
-  );
-
-  const prediction = useMemo(
-    () => buildPrediction(tomorrowDate, pressure.trend, recentLogs, settings),
-    [tomorrowDate, pressure.trend, recentLogs, settings]
-  );
 
   return (
     <>
