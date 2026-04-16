@@ -1,42 +1,35 @@
-import { useState, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
+import { collection, doc, setDoc, deleteDoc, onSnapshot } from 'firebase/firestore';
+import { db } from '../lib/firebase';
 import type { DailyLog } from '../types/health';
-
-const STORAGE_KEY = 'yozora-health-logs';
 
 type LogStore = Record<string, DailyLog>;
 
-function loadStore(): LogStore {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    return raw ? JSON.parse(raw) : {};
-  } catch {
-    return {};
-  }
-}
+export function useHealthLog(uid: string | null) {
+  const [store, setStore] = useState<LogStore>({});
 
-function today(): string {
-  return new Date().toISOString().slice(0, 10);
-}
-
-export function useHealthLog() {
-  const [store, setStore] = useState<LogStore>(loadStore);
-
-  const persist = useCallback((next: LogStore) => {
-    setStore(next);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
-  }, []);
+  useEffect(() => {
+    if (!uid) { setStore({}); return; }
+    const logsRef = collection(db, 'users', uid, 'logs');
+    return onSnapshot(logsRef, (snapshot) => {
+      const next: LogStore = {};
+      snapshot.forEach((d) => { next[d.id] = d.data() as DailyLog; });
+      setStore(next);
+    });
+  }, [uid]);
 
   const getTodayLog = useCallback((): DailyLog | null => {
-    return store[today()] ?? null;
+    return store[new Date().toISOString().slice(0, 10)] ?? null;
   }, [store]);
 
   const getLog = useCallback((date: string): DailyLog | null => {
     return store[date] ?? null;
   }, [store]);
 
-  const saveLog = useCallback((log: DailyLog) => {
-    persist({ ...store, [log.date]: log });
-  }, [store, persist]);
+  const saveLog = useCallback(async (log: DailyLog) => {
+    if (!uid) return;
+    await setDoc(doc(db, 'users', uid, 'logs', log.date), log);
+  }, [uid]);
 
   const getLogs = useCallback((days: number): DailyLog[] => {
     const result: DailyLog[] = [];
@@ -50,15 +43,19 @@ export function useHealthLog() {
     return result;
   }, [store]);
 
-  const deleteLog = useCallback((date: string) => {
-    const next = { ...store };
-    delete next[date];
-    persist(next);
-  }, [store, persist]);
+  const deleteLog = useCallback(async (date: string) => {
+    if (!uid) return;
+    await deleteDoc(doc(db, 'users', uid, 'logs', date));
+  }, [uid]);
 
-  const importLogs = useCallback((newStore: LogStore) => {
-    persist(newStore);
-  }, [persist]);
+  const importLogs = useCallback(async (newStore: LogStore) => {
+    if (!uid) return;
+    await Promise.all(
+      Object.entries(newStore).map(([date, log]) =>
+        setDoc(doc(db, 'users', uid, 'logs', date), log)
+      )
+    );
+  }, [uid]);
 
   return { getTodayLog, getLog, saveLog, getLogs, deleteLog, importLogs, store };
 }
