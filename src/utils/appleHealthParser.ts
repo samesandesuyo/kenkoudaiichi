@@ -59,7 +59,17 @@ export async function loadAppleHealthFile(file: File): Promise<string> {
 
 function parseDate(str: string): Date {
   // Apple Health format: "2026-04-15 23:30:00 +0900"
-  return new Date(str.replace(' ', 'T').replace(/(\+\d{2})(\d{2})$/, '$1:$2'));
+  // → "2026-04-15T23:30:00+09:00"
+  const normalized = str.trim().replace(
+    /^(\d{4}-\d{2}-\d{2}) (\d{2}:\d{2}:\d{2}) ?([+-]\d{2}):?(\d{2})$/,
+    '$1T$2$3:$4'
+  );
+  const d = new Date(normalized);
+  if (isNaN(d.getTime())) {
+    // フォールバック：そのままパース
+    return new Date(str.trim());
+  }
+  return d;
 }
 
 function toDateStr(d: Date): string {
@@ -128,6 +138,10 @@ export function parseAppleHealthXML(xmlText: string): ParseResult {
     const endStr = record.getAttribute('endDate');
 
     if (!startStr || !endStr) return;
+
+    const startCheck = parseDate(startStr);
+    const endCheck = parseDate(endStr);
+    if (isNaN(startCheck.getTime()) || isNaN(endCheck.getTime())) return;
 
     // ── 睡眠データ ──
     if (type === 'HKCategoryTypeIdentifierSleepAnalysis') {
