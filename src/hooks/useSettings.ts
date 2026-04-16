@@ -25,6 +25,9 @@ export function useSettings(uid: string | null) {
         setSettings({ ...DEFAULT_SETTINGS, ...snap.data() as UserSettings });
       }
       setLoaded(true);
+    }, (err) => {
+      console.error('useSettings onSnapshot error:', err);
+      setLoaded(true);
     });
   }, [uid]);
 
